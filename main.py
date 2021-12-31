@@ -57,6 +57,7 @@ class MyButton(ttk.Button):
             return
         if self.hasbomb:
             self.configure(image=self.bm)
+            self.minesweeper.lost=True
             self.end("Game Over")
         else:
             bombs = self.bombsaround()
@@ -76,14 +77,15 @@ class MyButton(ttk.Button):
                             button.left(None)
             else:
                 self.configure(image = self.minesweeper.numbers[bombs-1])
-            clicked = 0
-            for rbutton in self.minesweeper.buttons:
-                for button in rbutton:
-                    if button.clicked or button.flagged:
-                        clicked += 1
-            ncells=self.minesweeper.rows*self.minesweeper.columns
-            if clicked == ncells - self.minesweeper.nbombs:
-                self.end("You win")
+            if self.minesweeper.lost is False:
+                clicked = 0
+                for rbutton in self.minesweeper.buttons:
+                    for button in rbutton:
+                        if button.clicked or button.flagged:
+                            clicked += 1
+                ncells=self.minesweeper.rows*self.minesweeper.columns
+                if clicked == ncells - self.minesweeper.nbombs:
+                    self.end("You win")
 
     def bombsaround(self): 
         bombs=0
@@ -113,6 +115,7 @@ class Minesweeper:
         self.rows = nrows
         self.columns = ncolumns
         self.nbombs = nbombs
+        self.lost=False
         tk.geometry("{}x{}".format(nrows*38,ncolumns*38))
 
         img = Image.open("qm.png")
