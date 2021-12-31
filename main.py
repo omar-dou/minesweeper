@@ -7,6 +7,7 @@ from matplotlib.pyplot import imshow
 import numpy
 import random
 import os
+import time
 
 class MyButton(ttk.Button):
 
@@ -16,7 +17,28 @@ class MyButton(ttk.Button):
         self.column = column
         self.flagged = False
         self.clicked = False
+        self.tk = tk
         super(MyButton, self).__init__(tk, image=image)
+
+    def end(self, text):
+        for rbutton in self.minesweeper.buttons:
+            for button in rbutton:
+                if button.hasbomb:
+                    button.configure(image=self.bm)
+                else:
+                    if not button.clicked:
+                        button.left(None)
+        print(text)
+        Tk.update(self)
+        time.sleep(1)
+        for rbutton in self.minesweeper.buttons:
+            for button in rbutton:
+                button.destroy()
+        endgame = Label(text = text)
+        endgame.pack()
+
+                    
+
     def right(self,event):
         if self.clicked:
             return
@@ -35,7 +57,7 @@ class MyButton(ttk.Button):
             return
         if self.hasbomb:
             self.configure(image=self.bm)
-            self.end()
+            self.end("Game Over")
         else:
             bombs = self.bombsaround()
             if bombs ==0:
@@ -53,7 +75,15 @@ class MyButton(ttk.Button):
                             print("calling:",i,j)
                             button.left(None)
             else:
-                self.configure(image = self.minesweeper.numbers[bombs-1]) 
+                self.configure(image = self.minesweeper.numbers[bombs-1])
+            clicked = 0
+            for rbutton in self.minesweeper.buttons:
+                for button in rbutton:
+                    if button.clicked or button.flagged:
+                        clicked += 1
+            ncells=self.minesweeper.rows*self.minesweeper.columns
+            if clicked == ncells - self.minesweeper.nbombs:
+                self.end("You win")
 
     def bombsaround(self): 
         bombs=0
@@ -81,7 +111,9 @@ class Minesweeper:
         width =10
         height = 10
         self.rows = nrows
-        self.columns = ncolumns 
+        self.columns = ncolumns
+        self.nbombs = nbombs
+        tk.geometry("{}x{}".format(nrows*38,ncolumns*38))
 
         img = Image.open("qm.png")
         img = img.resize((width,height), Image.ANTIALIAS)
@@ -142,5 +174,5 @@ class Minesweeper:
 
         self.buttons = buttons
 tk = Tk()
-mine = Minesweeper(tk,10,10,10)
+mine = Minesweeper(tk,15,15,2)
 tk.mainloop()
