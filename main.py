@@ -34,10 +34,23 @@ class MyButton(ttk.Button):
         for rbutton in self.minesweeper.buttons:
             for button in rbutton:
                 button.destroy()
-        endgame = Label(text = text)
-        endgame.pack()
+        self.minesweeper.endgame = Label(text = text)
+        self.minesweeper.timer.destroy()
+        self.minesweeper.bomblab.destroy()
+        self.minesweeper.endgame.grid(row=0, column=0)
+        self.minesweeper.quit = ttk.Button(command = self.quit, text = "Quit")
+        self.minesweeper.reset = ttk.Button(command = self.reset, text = "Play Again")
+        self.minesweeper.quit.grid(row = 1, column = 3)
+        self.minesweeper.reset.grid(row = 1, column = 8)
 
-                    
+    def quit(self):
+        self.tk.quit()
+    def reset(self):
+        self.minesweeper.endgame.destroy()
+        self.minesweeper.quit.destroy()
+        self.minesweeper.reset.destroy()
+        self.minesweeper.create()
+
 
     def right(self,event):
         if self.clicked:
@@ -45,9 +58,13 @@ class MyButton(ttk.Button):
         if not self.flagged:
             self.configure(image=self.flag)
             self.flagged = True
+            self.minesweeper.flagleft -= 1
         else:
             self.flagged = False
             self.configure(image=self.qm)
+            self.minesweeper.flagleft += 1
+        self.minesweeper.bomblab.configure(text = str(self.minesweeper.flagleft))
+
 
     def left(self,event):
         # self.configure(image=self.bm)
@@ -110,12 +127,14 @@ class MyButton(ttk.Button):
 
 class Minesweeper:
     def __init__(self,tk,nrows,ncolumns,nbombs):
-        width =10
+        width = 10
         height = 10
+        self.flagleft = nbombs
         self.rows = nrows
         self.columns = ncolumns
         self.nbombs = nbombs
         self.lost=False
+        self.starttime = time.time()
         tk.geometry("{}x{}".format(nrows*38,ncolumns*38))
 
         img = Image.open("qm.png")
@@ -145,15 +164,30 @@ class Minesweeper:
         style = ttk.Style()
         style.configure("TButton", font = "Serif 15", padding = 10)
 
+        self.playbutton=ttk.Button(text = "Play", command = self.play)
+        self.playbutton.pack()
+
+    def play(self):
+        self.playbutton.destroy()
+        self.create()
+
+
+    def create(self):
+        self.timer = Label(text = "0")
+        self.timer.grid(row = 0, column = 1, columnspan = 5)
+        self.timer.after(1000, self.updatetimer)
+        self.bomblab = Label(text = str(self.nbombs))
+        self.bomblab.grid(row = 0, column = 9)
         buttons = []
-        for r in range(nrows):
+        for r in range(self.rows):
             rbuttons = []
-            for c in range(ncolumns):
+            for c in range(self.columns):
                 button = MyButton(tk, image = self.qm, hasbomb = 0, row = r, column = c)
                 # button.configure(command = button.change_picture)
                 button.bind("<Button-3>", button.right)
                 button.bind("<Button-1>", button.left)
-                button.grid(row=r, column=c)
+                button.grid(row=r+1, column=c)
+                #grid(column = 1, row = 10, columnspan = 1, rowspan = 1)
                 button.flag = self.flag
                 button.bm = self.bm
                 button.qm = self.qm
@@ -163,9 +197,9 @@ class Minesweeper:
             buttons.append(rbuttons)
         self.buttons = buttons
         bombcounter = 0
-        while bombcounter < nbombs:
-            rindex = random.randint(0, nrows -1)
-            cindex = random.randint(0, ncolumns -1)
+        while bombcounter < self.nbombs:
+            rindex = random.randint(0, self.rows -1)
+            cindex = random.randint(0, self.columns -1)
             rbuttons = buttons[rindex]
             button = rbuttons[cindex]
             if button.hasbomb != 1:
@@ -176,6 +210,11 @@ class Minesweeper:
         
 
         self.buttons = buttons
+    def updatetimer(self):
+        timestarted = int(time.time() - self.starttime)
+        self.timer.configure(text = str(timestarted))
+        self.timer.after(1000, self.updatetimer)
+    
 tk = Tk()
 mine = Minesweeper(tk,15,15,2)
 tk.mainloop()
