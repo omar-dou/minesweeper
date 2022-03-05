@@ -98,7 +98,7 @@ class MyButton(ttk.Button):
                 clicked = 0
                 for rbutton in self.minesweeper.buttons:
                     for button in rbutton:
-                        if button.clicked or button.flagged:
+                        if button.clicked:
                             clicked += 1
                 ncells=self.minesweeper.rows*self.minesweeper.columns
                 if clicked == ncells - self.minesweeper.nbombs:
@@ -216,5 +216,5 @@ class Minesweeper:
         self.timer.after(1000, self.updatetimer)
     
 tk = Tk()
-mine = Minesweeper(tk,15,15,2)
+mine = Minesweeper(tk,15,15,6)
 tk.mainloop()
