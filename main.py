@@ -28,7 +28,6 @@ class MyButton(ttk.Button):
                 else:
                     if not button.clicked:
                         button.left(None)
-        print(text)
         Tk.update(self)
         time.sleep(1)
         for rbutton in self.minesweeper.buttons:
@@ -40,8 +39,12 @@ class MyButton(ttk.Button):
         self.minesweeper.endgame.grid(row=0, column=0)
         self.minesweeper.quit = ttk.Button(command = self.quit, text = "Quit")
         self.minesweeper.reset = ttk.Button(command = self.reset, text = "Play Again")
-        self.minesweeper.quit.grid(row = 1, column = 3)
-        self.minesweeper.reset.grid(row = 1, column = 8)
+        self.minesweeper.intro2 = ttk.Button(command = self.minesweeper.intro, text = "Main Menu")
+
+        self.minesweeper.quit.grid(row = 1, column = 0)
+        self.minesweeper.reset.grid(row = 2, column = 0)
+        self.minesweeper.intro2.grid(row = 3, column = 0)
+
 
     def quit(self):
         self.tk.quit()
@@ -49,6 +52,7 @@ class MyButton(ttk.Button):
         self.minesweeper.endgame.destroy()
         self.minesweeper.quit.destroy()
         self.minesweeper.reset.destroy()
+        self.minesweeper.intro2.destroy()
         self.minesweeper.create()
 
 
@@ -68,10 +72,9 @@ class MyButton(ttk.Button):
 
     def left(self,event):
         # self.configure(image=self.bm)
-        print("clicking", self.row, self.column)
-        self.clicked = True
         if self.flagged:
             return
+        self.clicked = True
         if self.hasbomb:
             self.configure(image=self.bm)
             self.minesweeper.lost=True
@@ -135,7 +138,7 @@ class Minesweeper:
         self.nbombs = nbombs
         self.lost=False
         self.starttime = time.time()
-        tk.geometry("{}x{}".format(nrows*38,ncolumns*38))
+        #tk.geometry("{}x{}".format(nrows*38,ncolumns*38))
 
         img = Image.open("qm.png")
         img = img.resize((width,height), Image.ANTIALIAS)
@@ -163,13 +166,52 @@ class Minesweeper:
         tk.resizable(width = True, height = True)
         style = ttk.Style()
         style.configure("TButton", font = "Serif 15", padding = 10)
+        self.intro()
 
-        self.playbutton=ttk.Button(text = "Play", command = self.play)
-        self.playbutton.pack()
+
+    def intro(self):
+        try:
+            self.intro2.destroy()
+            self.endgame.destroy()
+            self.reset.destroy()
+            self.quit.destroy()
+        except:
+            pass
+        self.ezbutton=ttk.Button(text = "Easy", command = self.easyplay)
+        self.ezbutton.grid(row=1, column=2)
+        self.medbutton=ttk.Button(text = "Medium", command = self.mediumplay)
+        self.medbutton.grid(row=2, column=2)
+        self.hardbutton=ttk.Button(text = "Hard", command = self.hardplay)
+        self.hardbutton.grid(row=3, column=2)
+
+
 
     def play(self):
-        self.playbutton.destroy()
+        self.ezbutton.destroy()
+        self.medbutton.destroy()
+        self.hardbutton.destroy()
         self.create()
+
+    def easyplay(self):
+        self.rows = 8
+        self.columns = 8
+        self.nbombs = 10
+        self.flagsleft = self.nbombs
+        self.play()
+
+    def mediumplay(self):
+        self.rows = 13
+        self.columns = 13
+        self.nbombs = 30
+        self.flagsleft = self.nbombs
+        self.play()
+
+    def hardplay(self):
+        self.rows = 15
+        self.columns = 15
+        self.nbombs = 50
+        self.flagsleft = self.nbombs
+        self.play()
 
 
     def create(self):
@@ -216,5 +258,5 @@ class Minesweeper:
         self.timer.after(1000, self.updatetimer)
     
 tk = Tk()
-mine = Minesweeper(tk,15,15,6)
+mine = Minesweeper(tk,15,15,20)
 tk.mainloop()
